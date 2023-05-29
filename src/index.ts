@@ -55,24 +55,10 @@ const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
 };
 
-// type SessionData = Record<
-//   string,
-//   | {
-//       nonce?: string;
-//       // Store state as search params to easily stringify key-value pairs
-//       state?: URLSearchParams;
-//       accessToken?: string;
-//       codeVerifier?: string;
-//       sub?: string;
-//     }
-//   | undefined
-// >;
-
-// /**
-//  * In-memory store for session data.
-//  * In a real application, this would be a database.
-//  */
-// const sessionData: SessionData = {};
+type PriceInfo = {
+  service: string;
+  current_price: number;
+};
 
 app.use(
   cors({
@@ -224,6 +210,28 @@ apiRouter.get("/auth/logout", async (req, res) => {
     .clearCookie(SESSION_COOKIE_NAME, SESSION_COOKIE_OPTIONS)
     .sendStatus(200);
 });
+
+apiRouter.get("/prices", async (req, res) => {
+  const grabPrice = generateRandomPrice();
+  const gojekPrice = generateRandomPrice();
+  const priceResult: PriceInfo[] = [
+    {
+      service: "grab",
+      current_price: grabPrice,
+    },
+    {
+      service: "gojek",
+      current_price: gojekPrice,
+    },
+  ];
+  return res.json(priceResult);
+});
+
+function generateRandomPrice() {
+  const minPrice = 10;
+  const maxPrice = 50;
+  return Math.random() * (maxPrice - minPrice) + minPrice;
+}
 
 const initServer = async (): Promise<void> => {
   try {

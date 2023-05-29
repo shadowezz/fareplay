@@ -13,10 +13,10 @@ import {
   freezeTableName: true,
 })
 export class Session extends Model {
-  @AutoIncrement
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
+    autoIncrement: true,
   })
   id!: number;
 
