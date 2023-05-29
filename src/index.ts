@@ -194,7 +194,7 @@ apiRouter.get("/userinfo", async (req, res) => {
   });
 
   if (!session) {
-    console.error("callback error: session not found");
+    console.error("userinfo error: session not found");
     return res.sendStatus(401);
   }
 
@@ -202,7 +202,12 @@ apiRouter.get("/userinfo", async (req, res) => {
   const sub = session.sub;
 
   // User is not authenticated
-  if (accessToken === undefined || sub === undefined) {
+  if (
+    accessToken === null ||
+    sub === null ||
+    accessToken === undefined ||
+    sub === undefined
+  ) {
     return res.sendStatus(401);
   }
   const userinfo = await sgid.userinfo({
@@ -231,7 +236,6 @@ apiRouter.get("/auth/logout", async (req, res) => {
 
 apiRouter.get("/auth/is_logged_in", async (req, res) => {
   const sessionId = String(req.cookies[SESSION_COOKIE_NAME]);
-
   const session = await Session.findOne({
     where: {
       sessionString: sessionId,
@@ -240,6 +244,14 @@ apiRouter.get("/auth/is_logged_in", async (req, res) => {
 
   if (!session) {
     console.error("callback error: session not found");
+    return res.sendStatus(401);
+  }
+
+  const accessToken = session.accessToken;
+  const sub = session.sub;
+
+  // User is not authenticated
+  if (accessToken === null || sub === null) {
     return res.sendStatus(401);
   }
 
@@ -257,6 +269,14 @@ apiRouter.get("/prices", async (req, res) => {
 
   if (!session) {
     console.error("callback error: session not found");
+    return res.sendStatus(401);
+  }
+
+  const accessToken = session.accessToken;
+  const sub = session.sub;
+
+  // User is not authenticated
+  if (accessToken === null || sub === null) {
     return res.sendStatus(401);
   }
 
@@ -282,7 +302,7 @@ apiRouter.get("/prices", async (req, res) => {
       is_cheapest: prices[2] === lowestPrice,
     },
   ];
-  return res.json(priceResult);
+  return res.sendStatus(200).json(priceResult);
 });
 
 function generateRandomPrice() {
