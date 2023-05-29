@@ -158,7 +158,10 @@ apiRouter.get("/auth/callback", async (req, res): Promise<void> => {
   }
 
   try {
-    await Session.update({ ...session }, { where: { id: session.id } });
+    await Session.update(
+      { ...session.dataValues },
+      { where: { id: session.id } }
+    );
   } catch (error) {
     console.error(
       `callback error: failed to update session with accesstoken and sub: ${error}`
