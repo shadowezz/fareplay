@@ -230,24 +230,39 @@ apiRouter.get("/auth/logout", async (req, res) => {
 });
 
 apiRouter.get("/prices", async (req, res) => {
-  const grabPrice = generateRandomPrice();
-  const gojekPrice = generateRandomPrice();
-  const cdgPrice = generateRandomPrice();
+  const sessionId = String(req.cookies[SESSION_COOKIE_NAME]);
+
+  const session = await Session.findOne({
+    where: {
+      sessionString: sessionId,
+    },
+  });
+
+  if (!session) {
+    console.error("callback error: session not found");
+    return res.sendStatus(401);
+  }
+
+  let prices: number[] = [];
+  for (let i = 0; i < 3; i++) {
+    prices.push(generateRandomPrice());
+  }
+  const lowestPrice = Math.min(...prices);
   const priceResult: PriceInfo[] = [
     {
       service: "Grab",
-      current_price: grabPrice,
-      is_cheapest: true,
+      current_price: prices[0],
+      is_cheapest: prices[0] === lowestPrice,
     },
     {
       service: "Gojek",
-      current_price: gojekPrice,
-      is_cheapest: true,
+      current_price: prices[1],
+      is_cheapest: prices[1] === lowestPrice,
     },
     {
       service: "Comfort Delgro",
-      current_price: cdgPrice,
-      is_cheapest: true,
+      current_price: prices[2],
+      is_cheapest: prices[2] === lowestPrice,
     },
   ];
   return res.json(priceResult);
