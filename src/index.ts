@@ -120,9 +120,7 @@ apiRouter.get("/auth/callback", async (req, res): Promise<void> => {
 
   if (!session) {
     console.error("callback error: session not found");
-    res
-      .sendStatus(401)
-      .json({ success: false, message: "An error has occurred" });
+    res.status(401).json({ success: false, message: "An error has occurred" });
     // res.redirect(`${frontendHost}/error`);
     return;
   }
@@ -138,9 +136,7 @@ apiRouter.get("/auth/callback", async (req, res): Promise<void> => {
   // Validate that the code verifier exists for this session
   if (session.codeVerifier === undefined) {
     console.error("callback error: codeVerifier not found");
-    res
-      .sendStatus(401)
-      .json({ success: false, message: "An error has occurred" });
+    res.status(401).json({ success: false, message: "An error has occurred" });
     // res.redirect(`${frontendHost}/error`);
     return;
   }
@@ -157,9 +153,7 @@ apiRouter.get("/auth/callback", async (req, res): Promise<void> => {
     session.sub = sub;
   } catch (error) {
     console.error(`callback error: get accesstoken failed: ${error}`);
-    res
-      .sendStatus(401)
-      .json({ success: false, message: "An error has occurred" });
+    res.status(401).json({ success: false, message: "An error has occurred" });
     return;
   }
 
@@ -169,9 +163,7 @@ apiRouter.get("/auth/callback", async (req, res): Promise<void> => {
     console.error(
       `callback error: failed to update session with accesstoken and sub: ${error}`
     );
-    res
-      .sendStatus(401)
-      .json({ success: false, message: "An error has occurred" });
+    res.status(401).json({ success: false, message: "An error has occurred" });
     return;
   }
 
@@ -302,13 +294,40 @@ apiRouter.get("/prices", async (req, res) => {
       is_cheapest: prices[2] === lowestPrice,
     },
   ];
-  return res.sendStatus(200).json(priceResult);
+  return res.status(200).json(priceResult);
 });
 
 function generateRandomPrice() {
   const minPrice = 10;
   const maxPrice = 50;
   return Math.random() * (maxPrice - minPrice) + minPrice;
+}
+
+function calculateDistance(
+  lat1: number,
+  lat2: number,
+  lon1: number,
+  lon2: number
+) {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Distance in kilometers
+
+  return distance;
+}
+
+function toRadians(degrees) {
+  return degrees * (Math.PI / 180);
 }
 
 const initServer = async (): Promise<void> => {
