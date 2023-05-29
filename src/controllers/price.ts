@@ -3,18 +3,18 @@ import authConstants from "../constants/auth";
 
 type PriceInfo = {
   service: string;
-  current_price: number;
+  current_price: string;
   is_cheapest: boolean;
 };
 
-let priceMultipliers: number[] = [0.85, 0.9, 0.95];
+let priceMultipliers: number[] = [8.5, 9, 9.5];
 const refreshInterval: number = 1000 * 60 * 3;
 
 setInterval(() => {
   for (let i = 0; i < priceMultipliers.length; i++) {
     let newMultiplier = Math.random();
     newMultiplier = newMultiplier < 0.5 ? newMultiplier + 0.5 : newMultiplier;
-    priceMultipliers[i] = newMultiplier;
+    priceMultipliers[i] = newMultiplier * 10;
   }
 
   console.log(priceMultipliers);
@@ -37,7 +37,7 @@ const getPrices = async (req, res) => {
   const accessToken = session.accessToken;
   const sub = session.sub;
 
-  //   User is not authenticated
+  // User is not authenticated
   if (accessToken === null || sub === null) {
     return res.sendStatus(401);
   }
@@ -54,17 +54,17 @@ const getPrices = async (req, res) => {
   const priceResult: PriceInfo[] = [
     {
       service: "Grab",
-      current_price: prices[0],
+      current_price: prices[0].toFixed(2),
       is_cheapest: prices[0] === lowestPrice,
     },
     {
       service: "Gojek",
-      current_price: prices[1],
+      current_price: prices[1].toFixed(2),
       is_cheapest: prices[1] === lowestPrice,
     },
     {
       service: "Comfort Delgro",
-      current_price: prices[2],
+      current_price: prices[2].toFixed(2),
       is_cheapest: prices[2] === lowestPrice,
     },
   ];
