@@ -13,11 +13,11 @@ dotenv.config();
 
 const PORT = 5001;
 const redirectUri = String(
-  process.env.SGID_REDIRECT_URI ?? `http://localhost:${PORT}/auth/callback`
+  process.env.SGID_REDIRECT_URI ?? `http://localhost:${PORT}/api/auth/callback`
 );
-const frontendHost = String(
-  process.env.SGID_FRONTEND_HOST ?? "http://localhost:5173"
-);
+// const frontendHost = String(
+//   process.env.SGID_FRONTEND_HOST ?? "http://localhost:5173"
+// );
 
 const sgid = new SgidClient({
   clientId: String(process.env.SGID_CLIENT_ID),
@@ -58,12 +58,13 @@ const SESSION_COOKIE_OPTIONS = {
 type PriceInfo = {
   service: string;
   current_price: number;
+  is_cheapest: boolean;
 };
 
 app.use(
   cors({
     credentials: true,
-    origin: frontendHost,
+    origin: "*",
   })
 );
 
@@ -109,7 +110,6 @@ apiRouter.get("/auth/login", async (req, res) => {
 
 apiRouter.get("/auth/callback", async (req, res): Promise<void> => {
   const authCode = String(req.query.code);
-  const state = String(req.query.state);
   const sessionId = String(req.cookies[SESSION_COOKIE_NAME]);
 
   const session = await Session.findOne({
@@ -120,35 +120,48 @@ apiRouter.get("/auth/callback", async (req, res): Promise<void> => {
 
   if (!session) {
     console.error("callback error: session not found");
-    res.redirect(`${frontendHost}/error`);
+    res
+      .sendStatus(401)
+      .json({ success: false, message: "An error has occurred" });
+    // res.redirect(`${frontendHost}/error`);
     return;
   }
 
   //   const session = { ...sessionData[sessionId] };
-  // Validate that the state matches what we passed to sgID for this session
-  if (session.state?.toString() !== state) {
-    console.error("callback error: invalid state");
-    res.redirect(`${frontendHost}/error`);
-    return;
-  }
+  // if (session.state?.toString() !== state) {
+  //   console.error("callback error: invalid state");
+  //   res.send(401).json({ success: false, message: "An error has occurred" });
+  //   // res.redirect(`${frontendHost}/error`);
+  //   return;
+  // }
 
   // Validate that the code verifier exists for this session
   if (session.codeVerifier === undefined) {
     console.error("callback error: codeVerifier not found");
-    res.redirect(`${frontendHost}/error`);
+    res
+      .sendStatus(401)
+      .json({ success: false, message: "An error has occurred" });
+    // res.redirect(`${frontendHost}/error`);
     return;
   }
 
   // Exchange the authorization code and code verifier for the access token
   const { codeVerifier, nonce } = session;
-  const { accessToken, sub } = await sgid.callback({
-    code: authCode,
-    nonce,
-    codeVerifier,
-  });
-
-  session.accessToken = accessToken;
-  session.sub = sub;
+  try {
+    const { accessToken, sub } = await sgid.callback({
+      code: authCode,
+      nonce,
+      codeVerifier,
+    });
+    session.accessToken = accessToken;
+    session.sub = sub;
+  } catch (error) {
+    console.error(`callback error: get accesstoken failed: ${error}`);
+    res
+      .sendStatus(401)
+      .json({ success: false, message: "An error has occurred" });
+    return;
+  }
 
   try {
     await Session.update({ ...session }, { where: { id: session.id } });
@@ -156,12 +169,17 @@ apiRouter.get("/auth/callback", async (req, res): Promise<void> => {
     console.error(
       `callback error: failed to update session with accesstoken and sub: ${error}`
     );
+    res
+      .sendStatus(401)
+      .json({ success: false, message: "An error has occurred" });
+    return;
   }
 
   // sessionData[sessionId] = session;
 
   // Successful login, redirect to logged in state
-  res.redirect(`${frontendHost}/logged-in`);
+  // res.redirect(`${frontendHost}/logged-in`);
+  res.status(200).json({ success: true, message: "Ok" });
 });
 
 apiRouter.get("/userinfo", async (req, res) => {
@@ -214,14 +232,22 @@ apiRouter.get("/auth/logout", async (req, res) => {
 apiRouter.get("/prices", async (req, res) => {
   const grabPrice = generateRandomPrice();
   const gojekPrice = generateRandomPrice();
+  const cdgPrice = generateRandomPrice();
   const priceResult: PriceInfo[] = [
     {
-      service: "grab",
+      service: "Grab",
       current_price: grabPrice,
+      is_cheapest: true,
     },
     {
-      service: "gojek",
+      service: "Gojek",
       current_price: gojekPrice,
+      is_cheapest: true,
+    },
+    {
+      service: "Comfort Delgro",
+      current_price: cdgPrice,
+      is_cheapest: true,
     },
   ];
   return res.json(priceResult);
