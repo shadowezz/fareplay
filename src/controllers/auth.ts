@@ -16,9 +16,9 @@ dotenv.config();
 const redirectUri = String(
   process.env.SGID_REDIRECT_URI ?? `http://localhost:${PORT}/api/auth/callback`
 );
-// const frontendHost = String(
-//   process.env.SGID_FRONTEND_HOST ?? "http://localhost:5173"
-// );
+const frontendHost = String(
+  process.env.SGID_FRONTEND_HOST ?? "http://localhost:5173"
+);
 
 const sgid = new SgidClient({
   clientId: String(process.env.SGID_CLIENT_ID),
@@ -114,9 +114,8 @@ const sgIdCallBack = async (req, res): Promise<void> => {
     return;
   }
 
-  // Successful login, redirect to logged in state
-  // res.redirect(`${frontendHost}/logged-in`);
-  res.status(200).json({ success: true, message: "Ok" });
+  // Successful login, redirect to static loading site
+  res.redirect(frontendHost);
 };
 
 const getUserInfo = async (req, res) => {

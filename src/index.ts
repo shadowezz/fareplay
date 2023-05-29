@@ -15,9 +15,6 @@ import { Session } from "./models/Session";
 dotenv.config();
 
 const PORT = 5001;
-const redirectUri = String(
-  process.env.SGID_REDIRECT_URI ?? `http://localhost:${PORT}/api/auth/callback`
-);
 // const frontendHost = String(
 //   process.env.SGID_FRONTEND_HOST ?? "http://localhost:5173"
 // );
