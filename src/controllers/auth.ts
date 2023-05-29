@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import SgidClient, { generatePkcePair } from "@opengovsg/sgid-client";
 import * as dotenv from "dotenv";
 import crypto from "crypto";
@@ -27,7 +28,7 @@ const sgid = new SgidClient({
   redirectUri,
 });
 
-const login = async (req, res) => {
+const login = async (req: Request, res: Response) => {
   const sessionId = crypto.randomUUID();
   // Use search params to store state so other key-value pairs
   // can be added easily
@@ -62,7 +63,7 @@ const login = async (req, res) => {
     .json({ url });
 };
 
-const sgIdCallBack = async (req, res): Promise<void> => {
+const sgIdCallBack = async (req: Request, res: Response): Promise<void> => {
   const authCode = String(req.query.code);
   const sessionId = String(req.cookies[SESSION_COOKIE_NAME]);
 
@@ -118,7 +119,7 @@ const sgIdCallBack = async (req, res): Promise<void> => {
   res.redirect(frontendHost);
 };
 
-const getUserInfo = async (req, res) => {
+const getUserInfo = async (req: Request, res: Response) => {
   const sessionId = String(req.cookies[SESSION_COOKIE_NAME]);
 
   // Retrieve the access token and sub
@@ -152,7 +153,7 @@ const getUserInfo = async (req, res) => {
   return res.json(userinfo);
 };
 
-const logout = async (req, res) => {
+const logout = async (req: Request, res: Response) => {
   const sessionId = String(req.cookies[SESSION_COOKIE_NAME]);
   try {
     await Session.destroy({
@@ -168,7 +169,7 @@ const logout = async (req, res) => {
     .sendStatus(200);
 };
 
-const checkIsLoggedIn = async (req, res) => {
+const checkIsLoggedIn = async (req: Request, res: Response) => {
   const sessionId = String(req.cookies[SESSION_COOKIE_NAME]);
   const session = await Session.findOne({
     where: {

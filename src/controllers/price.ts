@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import { Session } from "../models/Session";
 import authConstants from "../constants/auth";
 
@@ -5,6 +6,13 @@ type PriceInfo = {
   service: string;
   current_price: string;
   is_cheapest: boolean;
+};
+
+type QueryParam = {
+  startLat: number;
+  endLat: number;
+  startLong: number;
+  endLong: number;
 };
 
 let priceMultipliers: number[] = [8.5, 9, 9.5];
@@ -16,11 +24,12 @@ setInterval(() => {
     newMultiplier = newMultiplier < 0.5 ? newMultiplier + 0.5 : newMultiplier;
     priceMultipliers[i] = newMultiplier * 10;
   }
-
-  console.log(priceMultipliers);
 }, refreshInterval);
 
-const getPrices = async (req, res) => {
+const getPrices = async (
+  req: Request<{}, {}, {}, QueryParam>,
+  res: Response
+) => {
   const sessionId = String(req.cookies[authConstants.SESSION_COOKIE_NAME]);
 
   const session = await Session.findOne({
@@ -94,7 +103,7 @@ function calculateDistance(
   return distance;
 }
 
-function toRadians(degrees) {
+function toRadians(degrees: number) {
   return degrees * (Math.PI / 180);
 }
 
