@@ -229,6 +229,23 @@ apiRouter.get("/auth/logout", async (req, res) => {
     .sendStatus(200);
 });
 
+apiRouter.get("/auth/is_logged_in", async (req, res) => {
+  const sessionId = String(req.cookies[SESSION_COOKIE_NAME]);
+
+  const session = await Session.findOne({
+    where: {
+      sessionString: sessionId,
+    },
+  });
+
+  if (!session) {
+    console.error("callback error: session not found");
+    return res.sendStatus(401);
+  }
+
+  return res.sendStatus(200);
+});
+
 apiRouter.get("/prices", async (req, res) => {
   const sessionId = String(req.cookies[SESSION_COOKIE_NAME]);
 
