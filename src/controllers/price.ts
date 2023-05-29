@@ -7,6 +7,19 @@ type PriceInfo = {
   is_cheapest: boolean;
 };
 
+let priceMultipliers: number[] = [0.85, 0.9, 0.95];
+const refreshInterval: number = 1000 * 60 * 3;
+
+setInterval(() => {
+  for (let i = 0; i < priceMultipliers.length; i++) {
+    let newMultiplier = Math.random();
+    newMultiplier = newMultiplier < 0.5 ? newMultiplier + 0.5 : newMultiplier;
+    priceMultipliers[i] = newMultiplier;
+  }
+
+  console.log(priceMultipliers);
+}, refreshInterval);
+
 const getPrices = async (req, res) => {
   const sessionId = String(req.cookies[authConstants.SESSION_COOKIE_NAME]);
 
@@ -24,14 +37,18 @@ const getPrices = async (req, res) => {
   const accessToken = session.accessToken;
   const sub = session.sub;
 
-  // User is not authenticated
+  //   User is not authenticated
   if (accessToken === null || sub === null) {
     return res.sendStatus(401);
   }
 
   let prices: number[] = [];
+  const { startLat, startLong, endLat, endLong } = req.query;
+  const distance = calculateDistance(startLat, endLat, startLong, endLong);
+
   for (let i = 0; i < 3; i++) {
-    prices.push(generateRandomPrice());
+    const currentMultiplier = priceMultipliers[i];
+    prices.push(distance * currentMultiplier);
   }
   const lowestPrice = Math.min(...prices);
   const priceResult: PriceInfo[] = [
@@ -53,12 +70,6 @@ const getPrices = async (req, res) => {
   ];
   return res.status(200).json(priceResult);
 };
-
-function generateRandomPrice() {
-  const minPrice = 10;
-  const maxPrice = 50;
-  return Math.random() * (maxPrice - minPrice) + minPrice;
-}
 
 function calculateDistance(
   lat1: number,
