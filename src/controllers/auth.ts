@@ -103,10 +103,7 @@ const sgIdCallBack = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    await Session.update(
-      { ...session.dataValues },
-      { where: { id: session.id } }
-    );
+    await Session.update(session.dataValues, { where: { id: session.id } });
   } catch (error) {
     console.error(
       `callback error: failed to update session with accesstoken and sub: ${error}`

@@ -2,7 +2,7 @@
 
 ![FarePlay Logo](fareplay_logo.png)
 
-This repository is the Express backend for FarePlay,the cutting-edge hail riding aggregator that simplifies the process of finding the best ride-hailing options for your destination. With FarePlay, users can easily compare prices and select the most suitable ride-hailing application based on their preferences and budget.
+This repository is the Express backend for FarePlay, the cutting-edge ride-hailing aggregator that simplifies the process of finding the best ride-hailing options for your destination. With FarePlay, users can easily compare prices and select the most suitable ride-hailing application based on their preferences and budget.
 
 ## Requirements
 - Node.js (tested on v18.3.0)
